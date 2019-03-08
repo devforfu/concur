@@ -33,7 +33,12 @@ type Peer struct {
 }
 
 func (p *Peer) Send(message string) {
-    p.Channel <- message
+    select {
+    case p.Channel <- message:
+        // Success
+    default:
+        log.Printf("Cannot send message to peer: %s\n", p.Name)
+    }
 }
 
 func (p *Peer) Close() error {
