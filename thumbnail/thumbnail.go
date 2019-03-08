@@ -23,6 +23,17 @@ func NewMaker(format ImageFormat, width, height int) *Maker {
     return &Maker{format, width, height}
 }
 
+// Thumbnail converts filename image into smaller image file appending .thumb
+// suffix before image extension.
+func (t *Maker) Thumbnail(filename string) (string, error) {
+    infile, outfile := filename, Name(filename)
+    err := t.Create(infile, outfile)
+    if err != nil {
+        return "", err
+    }
+    return outfile, nil
+}
+
 // Create takes infile image, converts it into thumbnail and saves into outfile.
 func (t *Maker) Create(infile, outfile string) (err error) {
     in, err := os.Open(infile)

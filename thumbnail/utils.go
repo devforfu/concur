@@ -7,6 +7,8 @@ import (
     "strings"
 )
 
+const ImageFormats = "jpeg|jpg|png|bmp"
+
 func DiscoverImages(dirname, formats string) ([]string, error) {
     files := make([]string, 0)
     for _, ext := range SplitPattern(formats) {
