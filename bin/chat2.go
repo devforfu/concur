@@ -5,6 +5,7 @@ import (
     "fmt"
     "log"
     "net"
+    "time"
 )
 
 func main() {
@@ -26,11 +27,22 @@ func main() {
 
 type Peer struct {
     Name string
+    Last time.Time
+    Conn net.Conn
     Channel chan<- string
 }
 
 func (p *Peer) Send(message string) {
     p.Channel <- message
+}
+
+func (p *Peer) Close() error {
+    if p.Conn != nil {
+        err := p.Conn.Close()
+        p.Conn = nil
+        return err
+    }
+    return nil
 }
 
 var (
@@ -58,8 +70,17 @@ func broadcaster() {
             }
             clients[peer] = true
         case peer:= <-leaving:
-            delete(clients, peer)
-            close(peer.Channel)
+            if peer.Conn != nil {
+                close(peer.Channel)
+            }
+        default:
+            for peer := range clients {
+                if time.Since(peer.Last) > 5 * time.Second {
+                    fmt.Printf("Disconnecting idle peer: %s\n", peer.Name)
+                    delete(clients, peer)
+                    peer.Close()
+                }
+            }
         }
     }
 }
@@ -76,21 +97,24 @@ func handleConn(conn net.Conn) {
         }
     }
 
-    peer := Peer{Name:input.Text(), Channel:ch}
+    peer := Peer{Name:input.Text(), Channel:ch, Conn:conn, Last:now()}
     messages <- peer.Name + " has arrived"
     entering <- peer
 
     input = bufio.NewScanner(conn)
     for input.Scan() {
         messages <- peer.Name + ": " + input.Text()
+        peer.Last = now()
     }
 
     leaving <- peer
     messages <- peer.Name + " has left"
-    _ = conn.Close()
+    _ = peer.Close()
 }
 
-
+func now() time.Time {
+    return time.Now().UTC()
+}
 
 func clientWriter(conn net.Conn, ch <-chan string) {
     for msg := range ch {
