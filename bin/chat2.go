@@ -68,22 +68,29 @@ func handleConn(conn net.Conn) {
     ch := make(chan string)
     go clientWriter(conn, ch)
 
-    who := conn.RemoteAddr().String()
-    peer := Peer{Name:who, Channel:ch}
+    ch <- "What is your name?"
+    input := bufio.NewScanner(conn)
+    for {
+        if input.Scan() {
+            break
+        }
+    }
 
-    ch <- "You are " + who
-    messages <- who + " has arrived"
+    peer := Peer{Name:input.Text(), Channel:ch}
+    messages <- peer.Name + " has arrived"
     entering <- peer
 
-    input := bufio.NewScanner(conn)
+    input = bufio.NewScanner(conn)
     for input.Scan() {
-        messages <- who + ": " + input.Text()
+        messages <- peer.Name + ": " + input.Text()
     }
 
     leaving <- peer
-    messages <- who + " has left"
+    messages <- peer.Name + " has left"
     _ = conn.Close()
 }
+
+
 
 func clientWriter(conn net.Conn, ch <-chan string) {
     for msg := range ch {
