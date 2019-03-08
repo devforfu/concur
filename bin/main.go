@@ -1,7 +1,7 @@
-package main
+package bin
 
 import (
-    "./thumbnail"
+    "../thumbnail"
     "flag"
     "github.com/mitchellh/go-homedir"
     "log"
