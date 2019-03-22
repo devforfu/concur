@@ -1,6 +1,7 @@
 package main
 
 import (
+    "fmt"
     "io/ioutil"
     "net/http"
     "os"
@@ -9,7 +10,14 @@ import (
 func main() {
     memo := NewMemo(httpGetBody)
     for url := range incomingURLs() {
-
+        fmt.Printf("Downloading: %s", url)
+        value, err := memo.Get(url)
+        if err != nil {
+            fmt.Printf(" | Error: %s\n", err)
+        } else {
+            bytes := value.([]byte)
+            fmt.Printf(" | Done! Size: %d\n", len(bytes))
+        }
     }
 }
 
@@ -19,6 +27,7 @@ func incomingURLs() <-chan string {
         for _, url := range os.Args[1:] {
             ch <- url
         }
+        close(ch)
     }()
     return ch
 }
