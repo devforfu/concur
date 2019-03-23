@@ -3,21 +3,22 @@ package main
 import (
     "fmt"
     "io/ioutil"
+    "log"
     "net/http"
     "os"
+    "time"
 )
 
 func main() {
     memo := NewMemo(httpGetBody)
     for url := range incomingURLs() {
-        fmt.Printf("Downloading: %s", url)
+        start := time.Now()
         value, err := memo.Get(url)
         if err != nil {
-            fmt.Printf(" | Error: %s\n", err)
-        } else {
-            bytes := value.([]byte)
-            fmt.Printf(" | Done! Size: %d\n", len(bytes))
+            log.Print(err)
         }
+        fmt.Printf("%s, %s, %d bytes\n",
+            url, time.Since(start), len(value.([]byte)))
     }
 }
 
