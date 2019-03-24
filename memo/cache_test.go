@@ -1,9 +1,10 @@
-package main
+package memo_test
 
 import (
     "fmt"
     "testing"
     "time"
+    "../memo"
 )
 
 func TestMemo_Get(t *testing.T) {
@@ -16,7 +17,7 @@ func TestMemo_Get(t *testing.T) {
         {"https://gopl.io", true},
         {"http://invalid.path", false},
     }
-    m := NewMemo(httpGetBody)
+    m := memo.New(httpGetBody)
     for _, testCase := range cases {
         start := time.Now()
         result, err := m.Get(testCase.url)
