@@ -1,11 +1,11 @@
 package main
 
 import (
+    "../memo"
     "fmt"
     "log"
     "os"
     "time"
-    "../memo"
 )
 
 func main() {

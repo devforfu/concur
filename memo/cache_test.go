@@ -1,10 +1,10 @@
 package memo_test
 
 import (
+    "../memo"
     "fmt"
     "testing"
     "time"
-    "../memo"
 )
 
 func TestMemo_Get(t *testing.T) {
@@ -17,14 +17,17 @@ func TestMemo_Get(t *testing.T) {
         {"https://gopl.io", true},
         {"http://invalid.path", false},
     }
-    m := memo.New(httpGetBody)
+    m := memo.New(memo.HTTPGetBody)
     for _, testCase := range cases {
         start := time.Now()
-        result, err := m.Get(testCase.url)
-        if err != nil && testCase.ok {
-            t.Errorf("url failed: %s", testCase.url)
+        value, err := m.Get(testCase.url)
+        if err != nil {
+            if testCase.ok {
+                t.Errorf("url failed: %s\n", testCase.url)
+            }
+        } else {
+            fmt.Printf("%s, %s, %d\n",
+                testCase.url, time.Since(start), len(value.([]byte)))
         }
-        fmt.Printf("%s, %s, %d",
-            testCase.url, time.Since(start), len(result.([]byte)))
     }
 }
