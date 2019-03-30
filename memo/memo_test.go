@@ -5,7 +5,11 @@ import (
     "testing"
 )
 
-func TestMemo_Get(t *testing.T) {
+func TestSequential(t *testing.T) {
     memotest.Sequential(t)
+}
+
+func TestConcurrent(t *testing.T) {
+    memotest.Concurrent(t)
 }
 
