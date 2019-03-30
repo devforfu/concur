@@ -1,8 +1,13 @@
 package memo
 
 import (
+    "fmt"
+    "io"
     "io/ioutil"
+    "log"
     "net/http"
+    "sync"
+    "time"
 )
 
 type Memo struct {
@@ -37,4 +42,25 @@ func HTTPGetBody(url string) (interface{}, error) {
     }
     defer resp.Body.Close()
     return ioutil.ReadAll(resp.Body)
+}
+
+// Fetch pulls URL strings from urls channel and fetches their content.
+func Fetch(w io.Writer, urls <-chan string) {
+    m := New(HTTPGetBody)
+    var n sync.WaitGroup
+    for url := range urls {
+        n.Add(1)
+        go func(url string) {
+            start := time.Now()
+            value, err := m.Get(url)
+            if err != nil {
+                log.Print(err)
+            }
+            status := fmt.Sprintf("%s, %s, %d bytes",
+                url, time.Since(start), len(value.([]byte)))
+            _, _ = w.Write([]byte(status))
+            n.Done()
+        }(url)
+    }
+    n.Wait()
 }
